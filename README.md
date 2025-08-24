@@ -1,75 +1,70 @@
-# 🚀 DNS Server Installer with BIND9  
-*Created by **Leo Ganteng***  
+# 🚀 BIND9 DNS Server Auto Installer
 
-```ascii
-██████╗ ███╗   ██╗███████╗    ██████╗  █████╗ ███╗   ██╗████████╗███████╗███╗   ██╗ ██████╗
-██╔══██╗████╗  ██║██╔════╝    ██╔══██╗██╔══██╗████╗  ██║╚══██╔══╝██╔════╝████╗  ██║██╔════╝
-██████╔╝██╔██╗ ██║█████╗      ██████╔╝███████║██╔██╗ ██║   ██║   █████╗  ██╔██╗ ██║██║  ███╗
-██╔═══╝ ██║╚██╗██║██╔══╝      ██╔═══╝ ██╔══██║██║╚██╗██║   ██║   ██╔══╝  ██║╚██╗██║██║   ██║
-██║     ██║ ╚████║███████╗    ██║     ██║  ██║██║ ╚████║   ██║   ███████╗██║ ╚████║╚██████╔╝
-╚═╝     ╚═╝  ╚═══╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═══╝ ╚═════╝
-✨ Features
+Script otomatis untuk instalasi **BIND9 DNS Server** dengan fitur lengkap:
 
-🔒 Secure Caching DNS Server with BIND9
+- ✅ DNS Caching + Forwarder
+- ✅ Blocklist otomatis (StevenBlack Hosts via RPZ)
+- ✅ Whitelist support
+- ✅ Logging & Security Monitoring
+- ✅ Email Alerts (SMTP)
+- ✅ Telegram Alerts (Bot API)
+- ✅ Auto Backup Harian
+- ✅ Watchdog Service (auto restart jika mati)
+- ✅ Uninstaller dengan Auto Backup
 
-📜 RPZ Blocklist (StevenBlack hosts auto-converted)
+---
 
-✅ Whitelist domains
+## 📌 Cara Pemakaian
 
-📡 Auto-update Blocklist from external source
+### Instalasi
+```bash
+chmod +x dns-setup.sh
+./dns-setup.sh
+```
 
-📊 Logging & Security Monitoring
+- Masukkan subnet internal yang boleh query
+- Input manual email penerima untuk alert
+- Input manual Telegram Bot Token & Chat ID
+- Pilih opsi instalasi
 
-📧 Email Alerts via SMTP
+### Uninstall
+```bash
+./dns-setup.sh
+# Pilih opsi (2) Uninstall
+```
 
-📲 Telegram Alerts
+---
 
-💾 Auto-backup daily (/root/dns-backup/)
-
-🔄 Watchdog auto-restart if service down
-
-⚡ Installation
-chmod +x installer.sh
-./installer.sh
-
-🛠️ Usage
-
-Pilih Install / Konfigurasi → otomatis setup BIND9, blocklist, whitelist, logging, alerts.
-
-Pilih Uninstall → hapus semua konfigurasi + backup otomatis.
-
-📦 Auto Backup
-
-Setiap hari pukul 00:30 → backup ke:
-
+## 📂 Struktur Backup
+Backup otomatis tersimpan di:
+```
 /root/dns-backup/dns-backup-YYYYMMDD.tar.gz
+```
 
-📢 Alerts
+---
 
-Email: via SMTP (input manual saat instalasi).
+## 🔔 Alerts
+- Email via SMTP (custom)
+- Telegram via Bot API
+- Security log alert setiap jam
 
-Telegram: kirim ke chat/group (input manual Bot Token & Chat ID saat instalasi).
+---
 
-🛡️ Blocklist & Whitelist
+## 💡 Blocklist + Whitelist
+- Blocklist otomatis update dari **StevenBlack Hosts** → dikonversi ke RPZ
+- Whitelist manual bisa ditambahkan di `/etc/bind/whitelist.rpz`
 
-Blocklist otomatis download & convert dari StevenBlack/hosts ke RPZ format.
+---
 
-Whitelist bisa ditambah manual di:
+## ❤️ Support Project Ini
+Kalau script ini bermanfaat, kamu bisa traktir kopi ☕ lewat PayPal:  
 
-/etc/bind/whitelist.db
+👉 [paypal.me/ekiguistian](https://www.paypal.me/ekiguistian)
 
-💖 Support Me
+Atau scan QR berikut:  
 
-Jika script ini bermanfaat, boleh traktir kopi/jajan via PayPal 😎👇
+![PayPal QR](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYYAAAGGAQAAAABX+xtIAAACV0lEQVR4nO2cy43bMBRFz4sEeEkBKSClSK2lpHQglZICAkjLABReFvyYM84iRuKxQ1wuvDBxABJv7vvSY8596/x0JwAiRIgQIUKECBEiHkJslhccI8BpwGm2cJat6cNPJeKhRHB39wjblwgcF0/W3yZwd3dfn3AqEQ8lzqzk+bsZhIgtwZ15J3mB55xKxAOI8eab4Nj87XP0bfox/qZ6f817iPgLYpvOouljpEbxJ59KxD8kqs4HB06Ydxz4aRB2kvnnVu6veQ8R9xOHmZmNWefbBL5ymq9AStuXJ5xKxCOInJS3K+JrTd9yQt/svuY9RNyxciEWIunDPZIsvTK4r8E9/wnI5p0QTfF9NTLzPng2fIi478X6snkHRPXtWefF3BEosm+0L5t3QBSb71C8dw7lpfE2yLd3RlSbD87sEWDIXdhcv5F8u3TeDdH6dt+HJnln3ofcZZ8Vzzsktgls4TRbDjM4Lu5fJ8iRHbDl408l4iFEE89T3l7r85zLh6vnl877INp4DiVzm92dGs+b0k0274Bo4nlS8hpKIrem3Uj2ArJ5J8SbPhw0BXnZyGWadN4N0dbnBG8HaE2/XfG8J6LReWq8rRSxrzWet4MW2bwXYt6HJpHLLyXCddpy6g1kP8S7B46NxHMzLlTFK553RoSSvKcnryFiyzE2Dj6H/Fe/h4g/WLfxPGuaWrCVqap03gdxY/Nr5319vyubd0psU52fA2w2Ystx0W8a+iGa1ksj8ZrBo/l5f8RN3l4fy5SpeZ2ky7d3Qpj+z4QIESJEiBAhQsR/R/wCJ/SRxUMdlTAAAAAASUVORK5CYII=)
 
-📧 Email PayPal: ekiguistian@gmail.com
+---
 
-👨‍💻 Author
-
-Leo Ganteng
-
-🌍 Indonesia
-
-📡 SysAdmin / DevOps / Network Enthusiast
-
-🔥 Keep the DNS secure & fast!
+✍️ Created with ❤️ by **Leo Ganteng**
