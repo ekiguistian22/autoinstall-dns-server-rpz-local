@@ -69,25 +69,25 @@ Backup otomatis tersimpan di:
 - Whitelist manual bisa ditambahkan di `/etc/bind/whitelist.rpz`
 
 ---
-## Jika Server DNS kamu belum resolve ke localhost ketika di cek menggunakan dig / nslookup. Coba ikuti langkah-langkah dibawah ini
+## 💡 Jika Server DNS kamu belum resolve ke localhost ketika di cek menggunakan dig / nslookup. Coba ikuti langkah-langkah dibawah ini
 Solusi: Pastikan server resolve ke DNS lokal (127.0.0.1)
 
 1. Edit konfigurasi Netplan
 Cek file konfigurasi Netplan (biasanya ada di /etc/netplan/01-netcfg.yaml atau /etc/netplan/50-cloud-init.yaml):
 
-sudo nano /etc/netplan/50-cloud-init.yaml
+`sudo nano /etc/netplan/50-cloud-init.yaml`
 
 
 Cari bagian:
 
 nameservers:
-  addresses: [1.1.1.1,8.8.8.8]
+ ` addresses: [1.1.1.1,8.8.8.8]`
 
 
 Ganti jadi:
 
 nameservers:
-  addresses: [127.0.0.1]
+  `addresses: [127.0.0.1]`
 
 
 (bisa juga [127.0.0.1, ::1] untuk support IPv6 lokal).
@@ -117,7 +117,7 @@ sudo systemctl restart bind9 || sudo systemctl restart named
 
 Jalankan:
 
-dig google.com @127.0.0.1
+`dig google.com @127.0.0.1 `
 
 
 Kalau dapat respon cepat (dan muncul SERVER: 127.0.0.1#53), berarti sudah lewat BIND9 lokal.
