@@ -87,32 +87,37 @@ nameservers:
 Ganti jadi:
 
 nameservers:
-  `addresses: [127.0.0.1]`
+  ```
+  addresses: [127.0.0.1]
+  ```
 
 
 (bisa juga [127.0.0.1, ::1] untuk support IPv6 lokal).
 
 Simpan lalu apply:
 
+```
 sudo netplan apply
-
+```
 
 Lock resolv.conf agar tidak di-overwrite
 Kadang cloud-init atau systemd-resolved akan overwrite /etc/resolv.conf.
 Untuk pastikan resolv pakai lokal:
 
+```
 sudo rm -f /etc/resolv.conf
 echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
 sudo chattr +i /etc/resolv.conf
+```
 
 
 chattr +i = file jadi immutable, tidak bisa diubah service lain.
 
 Restart service networking & DNS
-
+```
 sudo systemctl restart systemd-resolved
 sudo systemctl restart bind9 || sudo systemctl restart named
-
+```
 ✅ Cek apakah sudah resolve ke lokal
 
 Jalankan:
