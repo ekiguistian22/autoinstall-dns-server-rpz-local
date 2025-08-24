@@ -59,7 +59,7 @@ Backup otomatis tersimpan di:
 ## ❤️ Support Project Ini
 Kalau script ini bermanfaat, kamu bisa traktir kopi ☕ lewat PayPal:  
 
-👉 [paypal.me/ekiguistian](https://www.paypal.me/ekiguistian)
+👉 [paypal.me/ekiguistian](https://www.paypal.me/ekiguistian22)
 
 Atau scan QR berikut:  
 
