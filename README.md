@@ -1,3 +1,17 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Project-BIND9%20Auto%20Installer-blue?style=for-the-badge&logo=linux" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Maintained-Yes-success?style=for-the-badge" />
+</p>
+
+<h1 align="center">🚀 BIND9 DNS Server Auto Installer</h1>
+
+<p align="center">
+  <i>Auto installer & management script untuk BIND9 dengan blocklist, whitelist, alert, backup, dan security monitoring.</i>
+</p>
+
+---
+
 # 🚀 BIND9 DNS Server Auto Installer
 
 Script otomatis untuk instalasi **BIND9 DNS Server** dengan fitur lengkap:
@@ -63,6 +77,23 @@ Kalau script ini bermanfaat, kamu bisa traktir kopi ☕ lewat PayPal:
 
 Atau scan QR berikut:  
 ![PayPal QR](paypal_qr_ekiguistian22.png)
+
 ---
 
 ✍️ Created with ❤️ by **Leo Ganteng**
+
+---
+
+<p align="center">
+  ❤️ Created by <b>Leo Ganteng</b> | 
+  ☕ Support me via <a href="https://www.paypal.me/ekiguistian22">PayPal</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ekiguistian">
+    <img src="https://img.shields.io/github/followers/ekiguistian?label=Follow%20me&style=social" alt="GitHub Follow" />
+  </a>
+  <a href="https://github.com/ekiguistian?tab=repositories">
+    <img src="https://img.shields.io/badge/More%20Projects-GitHub-orange?style=flat-square" />
+  </a>
+</p>
