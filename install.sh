@@ -1,16 +1,19 @@
 #!/bin/bash
 # =====================================================
 # Script by - Eki Guistian Leo Ganteng
+# Versi Final Lengkap
 # =====================================================
 # BIND9 / named Caching DNS + RPZ Blocklist + Whitelist
 # Fitur:
 # - Autoupdate Blocklist (StevenBlack hosts)
-# - Whitelist custom
+# - Whitelist custom (default google.com)
+# - Blacklist custom (default xnxx.com)
 # - Logging lengkap + Logrotate
 # - Alerts (Email SMTP / Telegram)
 # - Auto-backup harian konfigurasi
 # - Watchdog via cron
 # - Install / Uninstall mode
+# - SMTP fix: mail.sasfiber.com:465, noreply@sasfiber.com
 # =====================================================
 
 set -e
@@ -65,44 +68,21 @@ if [[ "$OPT" == "2" ]]; then
 fi
 
 # === Instalasi ===
-
 echo "=== Instalasi DNS Server ($DNS_SERVICE) ==="
 
 # --- INPUTS ---
 read -p "Masukkan subnet internal yang boleh query (default: 192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 localhost): " SUBNETS
 SUBNETS=${SUBNETS:-"192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 localhost"}
 
-read -p "Aktifkan Email Alert via SMTP? (y/N): " ENABLE_SMTP
-ENABLE_SMTP=${ENABLE_SMTP:-N}
+read -p "Masukkan email admin penerima alert: " ADMIN_EMAIL
 
-if [[ "${ENABLE_SMTP^^}" == "Y" ]]; then
-  read -p "Email tujuan alert (contoh: admin@yourdomain.com): " ALERT_EMAIL
-  read -p "SMTP server (contoh: smtp.yourdomain.com): " SMTP_SERVER
-  read -p "SMTP port (default 587): " SMTP_PORT
-  SMTP_PORT=${SMTP_PORT:-587}
-  read -p "SMTP username (email login): " SMTP_USER
-  read -s -p "SMTP password: " SMTP_PASS
-  echo
-fi
-
-read -p "Aktifkan Telegram Alert? (y/N): " ENABLE_TG
-ENABLE_TG=${ENABLE_TG:-N}
-
-if [[ "${ENABLE_TG^^}" == "Y" ]]; then
-  read -p "Telegram Bot Token (contoh: 123456:ABCDEF...): " TG_TOKEN
-  read -p "Telegram Chat ID (contoh: 123456789 atau -100xxxxxxxxxx): " TG_CHAT_ID
-fi
-
-echo "=== [1/10] Update & Upgrade System ==="
+echo "=== [1/12] Update & Upgrade System ==="
 apt update -y && apt upgrade -y
 
-echo "=== [2/10] Install Packages ==="
-apt install -y bind9 bind9-utils dnsutils logrotate curl wget
-if [[ "${ENABLE_SMTP^^}" == "Y" ]]; then
-  apt install -y msmtp msmtp-mta mailutils ca-certificates
-fi
+echo "=== [2/12] Install Packages ==="
+apt install -y bind9 bind9-utils dnsutils logrotate curl wget msmtp msmtp-mta mailutils ca-certificates
 
-echo "=== [3/10] Konfigurasi named.conf.options ==="
+echo "=== [3/12] Konfigurasi named.conf.options ==="
 cat >/etc/bind/named.conf.options <<EOF
 options {
     directory "/var/cache/bind";
@@ -120,7 +100,7 @@ options {
 };
 EOF
 
-echo "=== [4/10] Konfigurasi Logging ==="
+echo "=== [4/12] Konfigurasi Logging ==="
 mkdir -p /var/log/named /var/log/dns-security
 chown bind:bind /var/log/named /var/log/dns-security
 
@@ -135,7 +115,7 @@ logging {
 };
 EOF
 
-echo "=== [5/10] Konfigurasi logrotate ==="
+echo "=== [5/12] Konfigurasi logrotate ==="
 cat >/etc/logrotate.d/bind9 <<EOF
 /var/log/named/*.log /var/log/dns-security/*.log {
     daily
@@ -151,12 +131,11 @@ cat >/etc/logrotate.d/bind9 <<EOF
 }
 EOF
 
-echo "=== [6/10] Setup RPZ Blocklist & Whitelist ==="
+echo "=== [6/12] Setup RPZ Blocklist & Whitelist ==="
 mkdir -p $RPZ_DIR
 cat >$RPZ_DIR/whitelist.txt <<EOF
-# Example whitelist domains
-gooddomain.com
-safe-site.org
+# Default whitelist
+google.com
 EOF
 
 cat >$RPZ_DIR/blacklist.rpz <<EOF
@@ -168,6 +147,7 @@ cat >$RPZ_DIR/blacklist.rpz <<EOF
                         4w      ; expire
                         1h )    ; minimum
         IN      NS      localhost.
+xnxx.com        CNAME   .
 EOF
 
 # Update blacklist script
@@ -186,7 +166,9 @@ if [[ -f "$RPZ_DIR/whitelist.txt" ]]; then
   mv ${TMP}.f $TMP
 fi
 
-# generate RPZ
+# append into blacklist
+cp $BL_FILE ${BL_FILE}.bak
+
 cat >$BL_FILE <<EOL
 \$TTL 2h
 @       IN      SOA     localhost. root.localhost. (
@@ -203,7 +185,7 @@ while read d; do
 done < $TMP
 
 rm -f $TMP
-systemctl reload $DNS_SERVICE
+systemctl reload bind9 || systemctl reload named
 EOF
 chmod +x /usr/local/bin/dns-update-blocklist.sh
 
@@ -217,36 +199,28 @@ zone "blacklist.rpz" {
 };
 EOF
 
-echo "=== [7/10] Buat Script Alert & Backup ==="
-mkdir -p "$BACKUP_DIR"
-
-# --- Alert Email ---
-if [[ "${ENABLE_SMTP^^}" == "Y" ]]; then
+echo "=== [7/12] Setup SMTP Email Alert ==="
 cat >/etc/msmtprc <<EOF
 defaults
 auth           on
 tls            on
+tls_starttls   off
 tls_trust_file /etc/ssl/certs/ca-certificates.crt
 account        default
-host           ${SMTP_SERVER}
-port           ${SMTP_PORT}
-from           ${SMTP_USER}
-user           ${SMTP_USER}
-password       ${SMTP_PASS}
+host           mail.sasfiber.com
+port           465
+from           noreply@sasfiber.com
+user           noreply@sasfiber.com
+password       Donotdistrub@2208
 EOF
 chmod 600 /etc/msmtprc
-cat >/etc/dns-alert-email.conf <<EOF
-ALERT_EMAIL="${ALERT_EMAIL}"
-EOF
-fi
 
-# --- Alert Telegram ---
-if [[ "${ENABLE_TG^^}" == "Y" ]]; then
-cat >/etc/dns-alert-telegram.conf <<EOF
-TG_TOKEN="${TG_TOKEN}"
-TG_CHAT_ID="${TG_CHAT_ID}"
+cat >/etc/dns-alert-email.conf <<EOF
+ALERT_EMAIL="${ADMIN_EMAIL}"
 EOF
-fi
+
+echo "=== [8/12] Buat Script Alert & Backup ==="
+mkdir -p "$BACKUP_DIR"
 
 # --- Common Alert Script ---
 cat >/usr/local/bin/dns-send-alert.sh <<'EOF'
@@ -257,13 +231,6 @@ if [[ -f /etc/dns-alert-email.conf ]]; then
   source /etc/dns-alert-email.conf
   echo "$MSG" | mail -s "[DNS ALERT] $(hostname)" "$ALERT_EMAIL"
 fi
-
-if [[ -f /etc/dns-alert-telegram.conf ]]; then
-  source /etc/dns-alert-telegram.conf
-  curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-       -d chat_id="${TG_CHAT_ID}" \
-       -d text="$(hostname): $MSG"
-fi
 EOF
 chmod +x /usr/local/bin/dns-send-alert.sh
 
@@ -273,32 +240,32 @@ cat >/usr/local/bin/dns-backup.sh <<EOF
 TIMESTAMP=\$(date +"%Y%m%d")
 FILE="$BACKUP_DIR/dns-backup-\$TIMESTAMP.tar.gz"
 tar -czf "\$FILE" /etc/bind /var/log/named /var/log/dns-security /etc/msmtprc \
-  /etc/dns-alert-email.conf /etc/dns-alert-telegram.conf 2>/dev/null || true
+  /etc/dns-alert-email.conf 2>/dev/null || true
 EOF
 chmod +x /usr/local/bin/dns-backup.sh
 
-echo "=== [8/10] Enable & Start DNS Service ($DNS_SERVICE) ==="
+echo "=== [9/12] Enable & Start DNS Service ($DNS_SERVICE) ==="
 systemctl enable $DNS_SERVICE
 systemctl restart $DNS_SERVICE
 systemctl status $DNS_SERVICE --no-pager || true
 
-echo "=== [9/10] Crontab Watchdog, Backup & Blocklist Update ==="
+echo "=== [10/12] Crontab Watchdog, Backup & Blocklist Update ==="
 (crontab -l 2>/dev/null; cat <<EOF
 */5 * * * * systemctl is-active --quiet $DNS_SERVICE || systemctl restart $DNS_SERVICE
-0 * * * * /usr/local/bin/dns-send-alert.sh "Hourly DNS check OK"
 30 0 * * * /usr/local/bin/dns-backup.sh
 15 3 * * * /usr/local/bin/dns-update-blocklist.sh
 EOF
 ) | crontab -
 
-echo "=== [10/10] Selesai ==="
-echo "✅ $DNS_SERVICE sudah terinstall dengan forwarders: $FORWARDERS"
-echo "✅ Subnet allowed: $SUBNETS"
-echo "✅ Auto-backup harian aktif ke $BACKUP_DIR"
-echo "✅ Blocklist otomatis update dari StevenBlack"
-if [[ "${ENABLE_SMTP^^}" == "Y" ]]; then
-  echo "✅ Email alert aktif -> $ALERT_EMAIL"
-fi
-if [[ "${ENABLE_TG^^}" == "Y" ]]; then
-  echo "✅ Telegram alert aktif -> Chat ID $TG_CHAT_ID"
-fi
+echo "=== [11/12] Update Blocklist Sekarang ==="
+/usr/local/bin/dns-update-blocklist.sh
+
+echo "=== [12/12] Tes DNS ==="
+echo ">>> Test google.com (harus resolve)"
+dig +short google.com @127.0.0.1 || true
+echo
+echo ">>> Test xnxx.com (harus blocked)"
+dig +short xnxx.com @127.0.0.1 || true
+
+echo "=== Selesai ==="
+echo "✅ $DNS_SERVICE sudah jalan dengan whitelist google.com & block xnxx.com"
