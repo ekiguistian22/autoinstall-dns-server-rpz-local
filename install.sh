@@ -2,11 +2,15 @@
 # =====================================================
 # Script by - Eki Guistian Leo Ganteng
 # =====================================================
-# BIND9 Caching + RPZ Blocklist + Whitelist
-# Autoupdate Blocklist, Logging, Alerts (SMTP/Telegram), AutoBackup
-# Forwarders: 103.88.88.88 103.88.88.99 203.119.13.77 203.119.13.78
-# Subnet internal interaktif; SMTP & Telegram alerts interaktif
-# Auto-backup harian: /root/dns-backup/dns-backup-YYYYMMDD.tar.gz
+# BIND9 / named Caching DNS + RPZ Blocklist + Whitelist
+# Fitur:
+# - Autoupdate Blocklist (StevenBlack hosts)
+# - Whitelist custom
+# - Logging lengkap + Logrotate
+# - Alerts (Email SMTP / Telegram)
+# - Auto-backup harian konfigurasi
+# - Watchdog via cron
+# - Install / Uninstall mode
 # =====================================================
 
 set -e
@@ -23,12 +27,12 @@ else
 fi
 
 echo "=== MENU DNS SCRIPT ==="
-echo "1) Install / Konfigurasi BIND9"
-echo "2) Uninstall BIND9 + Backup + Bersihkan konfigurasi"
+echo "1) Install / Konfigurasi DNS ($DNS_SERVICE)"
+echo "2) Uninstall DNS + Backup + Bersihkan konfigurasi"
 read -p "Pilih opsi (1/2): " OPT
 
 if [[ "$OPT" == "2" ]]; then
-  echo "=== Uninstall BIND9 & backup konfigurasi ==="
+  echo "=== Uninstall DNS & backup konfigurasi ==="
   TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
   BACKUP_FILE="$BACKUP_DIR/dns-backup-$TIMESTAMP.tar.gz"
   mkdir -p "$BACKUP_DIR"
@@ -56,16 +60,16 @@ if [[ "$OPT" == "2" ]]; then
 
   crontab -l 2>/dev/null | grep -v "dns-" | grep -v "dns-backup" | crontab - || true
 
-  echo "✅ BIND9 & konfigurasi sudah dihapus. Backup ada di $BACKUP_FILE"
+  echo "✅ $DNS_SERVICE & konfigurasi sudah dihapus. Backup ada di $BACKUP_FILE"
   exit 0
 fi
 
 # === Instalasi ===
 
-echo "=== Instalasi DNS Server (BIND9) ==="
+echo "=== Instalasi DNS Server ($DNS_SERVICE) ==="
 
 # --- INPUTS ---
-read -p "Masukkan subnet internal yang boleh query (pisahkan spasi). Default: '192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 localhost': " SUBNETS
+read -p "Masukkan subnet internal yang boleh query (default: 192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 localhost): " SUBNETS
 SUBNETS=${SUBNETS:-"192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 localhost"}
 
 read -p "Aktifkan Email Alert via SMTP? (y/N): " ENABLE_SMTP
@@ -199,7 +203,7 @@ while read d; do
 done < $TMP
 
 rm -f $TMP
-systemctl reload bind9
+systemctl reload $DNS_SERVICE
 EOF
 chmod +x /usr/local/bin/dns-update-blocklist.sh
 
@@ -273,7 +277,7 @@ tar -czf "\$FILE" /etc/bind /var/log/named /var/log/dns-security /etc/msmtprc \
 EOF
 chmod +x /usr/local/bin/dns-backup.sh
 
-echo "=== [8/10] Enable & Start BIND9 ==="
+echo "=== [8/10] Enable & Start DNS Service ($DNS_SERVICE) ==="
 systemctl enable $DNS_SERVICE
 systemctl restart $DNS_SERVICE
 systemctl status $DNS_SERVICE --no-pager || true
@@ -288,7 +292,7 @@ EOF
 ) | crontab -
 
 echo "=== [10/10] Selesai ==="
-echo "✅ BIND9 sudah terinstall dengan forwarders: $FORWARDERS"
+echo "✅ $DNS_SERVICE sudah terinstall dengan forwarders: $FORWARDERS"
 echo "✅ Subnet allowed: $SUBNETS"
 echo "✅ Auto-backup harian aktif ke $BACKUP_DIR"
 echo "✅ Blocklist otomatis update dari StevenBlack"
