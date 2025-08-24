@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Project-BIND9%20Auto%20Installer-blue?style=for-the-badge&logo=linux" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/License-GPL.3.0-green?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Maintained-Yes-success?style=for-the-badge" />
 </p>
 
