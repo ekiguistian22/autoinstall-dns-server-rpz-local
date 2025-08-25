@@ -82,6 +82,23 @@ apt update -y && apt upgrade -y
 echo "=== [2/12] Install Packages ==="
 apt install -y bind9 bind9-utils dnsutils logrotate curl wget msmtp msmtp-mta mailutils ca-certificates
 
+echo "=== [2b/12] Validasi Instalasi Paket ==="
+if ! command -v named >/dev/null 2>&1; then
+  echo "❌ ERROR: Bind9 gagal terinstall! Silakan cek repository apt atau koneksi internet."
+  exit 1
+fi
+
+if ! command -v dig >/dev/null 2>&1; then
+  echo "❌ ERROR: dnsutils gagal terinstall! Pastikan paket dnsutils tersedia di repositori."
+  exit 1
+fi
+
+if ! command -v mail >/dev/null 2>&1; then
+  echo "⚠️ WARNING: mailutils tidak ditemukan, fitur alert email mungkin tidak jalan."
+fi
+
+echo "✅ Validasi selesai, semua paket utama tersedia."
+
 echo "=== [3/12] Konfigurasi named.conf.options ==="
 cat >/etc/bind/named.conf.options <<EOF
 options {
