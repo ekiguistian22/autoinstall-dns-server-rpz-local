@@ -31,9 +31,11 @@ Script otomatis untuk instalasi **BIND9 DNS Server** dengan fitur lengkap:
 ## 📌 Cara Pemakaian
 
 ### Instalasi
-```bash
-chmod +x dns-setup.sh
-./dns-setup.sh
+``` masuk sebagai root - sudo su
+git clone https://github.com/ekiguistian22/autoinstall-dns-server-rpz-local
+cd autoinstall-dns-server-rpz-local
+chmod +x install.sh
+bash install.sh
 ```
 
 - Masukkan subnet internal yang boleh query
@@ -43,7 +45,7 @@ chmod +x dns-setup.sh
 
 ### Uninstall
 ```bash
-./dns-setup.sh
+bash install.sh
 # Pilih opsi (2) Uninstall
 ```
 
