@@ -1,33 +1,61 @@
 #!/bin/bash
 # ==============================================
-# Script: fix-resolv.sh
+# Script: fix-resolv.sh (Interactive)
 # Author: Eki Guistian Leo Ganteng
 # ==============================================
 # Fungsi:
-# - Ganti resolver bawaan (1.1.1.1 / 8.8.8.8) ke 127.0.0.1
-# - Nonaktifkan systemd-resolved symlink agar resolv.conf bisa di-edit manual
+# - Atur resolv.conf agar pakai DNS lokal (127.0.0.1)
+# - Balikin resolv.conf ke default (Cloudflare + Google DNS)
 # ==============================================
 
 set -e
 
-echo "=== Fix resolv.conf untuk gunakan DNS lokal (127.0.0.1) ==="
+# Pastikan systemd-resolved dimatikan supaya resolv.conf tidak auto-overwrite
+systemctl stop systemd-resolved 2>/dev/null || true
+systemctl disable systemd-resolved 2>/dev/null || true
 
-# Matikan systemd-resolved agar resolv.conf tidak di-overwrite
-systemctl stop systemd-resolved
-systemctl disable systemd-resolved
-
-# Hapus symlink lama
+# Hapus symlink resolv.conf jika ada
 if [ -L /etc/resolv.conf ]; then
     rm -f /etc/resolv.conf
 fi
 
-# Tulis resolv.conf baru
-cat >/etc/resolv.conf <<EOF
-nameserver 127.0.0.1
-# fallback external DNS (opsional, uncomment jika perlu)
-# nameserver 1.1.1.1
-# nameserver 8.8.8.8
-EOF
+echo "======================================"
+echo "   FIX RESOLV.CONF - PILIH MODE"
+echo "======================================"
+echo "1) Pakai DNS lokal (127.0.0.1)"
+echo "2) Balik ke DNS default (1.1.1.1 + 8.8.8.8)"
+echo "3) Keluar"
+echo "======================================"
+read -p "Pilih opsi [1-3]: " OPT
 
-echo "✅ resolv.conf sudah diganti ke 127.0.0.1"
-echo ">>> Coba test dengan: dig google.com @127.0.0.1"
+case "$OPT" in
+  1)
+    echo "=== Set resolv.conf ke 127.0.0.1 ==="
+    cat >/etc/resolv.conf <<EOF
+nameserver 127.0.0.1
+EOF
+    echo "✅ Sekarang semua query DNS resolve ke server lokal (127.0.0.1)"
+    ;;
+
+  2)
+    echo "=== Set resolv.conf ke default DNS (Cloudflare + Google) ==="
+    cat >/etc/resolv.conf <<EOF
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+EOF
+    echo "✅ resolv.conf sudah balik ke default (1.1.1.1 & 8.8.8.8)"
+    ;;
+
+  3)
+    echo "Keluar..."
+    exit 0
+    ;;
+
+  *)
+    echo "❌ Pilihan tidak valid"
+    exit 1
+    ;;
+esac
+
+echo
+echo ">>> Tes dengan: dig google.com"
