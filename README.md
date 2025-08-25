@@ -21,7 +21,6 @@ Script otomatis untuk instalasi **BIND9 DNS Server** dengan fitur lengkap:
 - ✅ Whitelist support
 - ✅ Logging & Security Monitoring
 - ✅ Email Alerts (SMTP)
-- ✅ Telegram Alerts (Bot API)
 - ✅ Auto Backup Harian
 - ✅ Watchdog Service (auto restart jika mati)
 - ✅ Uninstaller dengan Auto Backup
@@ -63,7 +62,6 @@ Backup otomatis tersimpan di:
 
 ## 🔔 Alerts
 - Email via SMTP (custom)
-- Telegram via Bot API
 - Security log alert setiap jam
 
 ---
