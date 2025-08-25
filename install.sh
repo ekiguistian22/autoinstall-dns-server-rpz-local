@@ -1,7 +1,6 @@
 #!/bin/bash
 # =====================================================
 # Script by - Eki Guistian Leo Ganteng
-# Versi Final Lengkap
 # =====================================================
 # BIND9 / named Caching DNS + RPZ Blocklist + Whitelist
 # Fitur:
@@ -9,7 +8,7 @@
 # - Whitelist custom (default google.com)
 # - Blacklist custom (default xnxx.com)
 # - Logging lengkap + Logrotate
-# - Alerts (Email SMTP / Telegram)
+# - Alerts (Email SMTP)
 # - Auto-backup harian konfigurasi
 # - Watchdog via cron
 # - Install / Uninstall mode
@@ -47,7 +46,6 @@ if [[ "$OPT" == "2" ]]; then
     /var/log/dns-security \
     /etc/msmtprc \
     /etc/dns-alert-email.conf \
-    /etc/dns-alert-telegram.conf \
     2>/dev/null || true
 
   echo "✅ Backup selesai -> $BACKUP_FILE"
@@ -58,7 +56,7 @@ if [[ "$OPT" == "2" ]]; then
 
   rm -rf /etc/bind /var/cache/bind /var/log/named /var/log/dns-security \
          /etc/logrotate.d/bind9 /etc/msmtprc /etc/dns-alert-email.conf \
-         /etc/dns-alert-telegram.conf /usr/local/bin/dns-*.sh \
+         /usr/local/bin/dns-*.sh \
          /usr/local/bin/dns-backup.sh
 
   crontab -l 2>/dev/null | grep -v "dns-" | grep -v "dns-backup" | crontab - || true
