@@ -12,7 +12,7 @@
 # - Auto-backup harian konfigurasi
 # - Watchdog via cron
 # - Install / Uninstall mode
-# - SMTP fix: mail.sasfiber.com:465, noreply@sasfiber.com
+# - SMTP fix: mail.sasfiber.com
 # =====================================================
 
 set -e
